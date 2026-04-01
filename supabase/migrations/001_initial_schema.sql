@@ -168,33 +168,33 @@ as $$ select role from public.users where id = auth.uid() $$;
 -- users
 create policy "users: read own" on public.users for select using (id = auth.uid());
 create policy "users: update own" on public.users for update using (id = auth.uid());
-create policy "users: admin full" on public.users using (public.current_user_role() = 'admin');
+create policy "users: admin full" on public.users for all using (public.current_user_role() = 'admin');
 
 -- progress
 create policy "progress: own" on public.progress using (user_id = auth.uid());
-create policy "progress: admin" on public.progress using (public.current_user_role() = 'admin');
+create policy "progress: admin" on public.progress for all using (public.current_user_role() = 'admin');
 
 -- quiz_attempts
 create policy "quiz_attempts: own" on public.quiz_attempts using (user_id = auth.uid());
-create policy "quiz_attempts: admin" on public.quiz_attempts using (public.current_user_role() = 'admin');
+create policy "quiz_attempts: admin" on public.quiz_attempts for all using (public.current_user_role() = 'admin');
 
 -- project_submissions
 create policy "project_submissions: own" on public.project_submissions using (user_id = auth.uid());
-create policy "project_submissions: admin" on public.project_submissions using (public.current_user_role() = 'admin');
+create policy "project_submissions: admin" on public.project_submissions for all using (public.current_user_role() = 'admin');
 
 -- streaks
 create policy "streaks: own" on public.streaks using (user_id = auth.uid());
-create policy "streaks: admin" on public.streaks using (public.current_user_role() = 'admin');
+create policy "streaks: admin" on public.streaks for all using (public.current_user_role() = 'admin');
 
 -- badges
 create policy "badges: read own" on public.badges for select using (user_id = auth.uid());
 create policy "badges: insert own" on public.badges for insert with check (user_id = auth.uid());
-create policy "badges: admin" on public.badges using (public.current_user_role() = 'admin');
+create policy "badges: admin" on public.badges for all using (public.current_user_role() = 'admin');
 
 -- leaderboard_cache (all authenticated users can read)
 create policy "leaderboard: read all" on public.leaderboard_cache for select using (auth.uid() is not null);
 create policy "leaderboard: upsert own" on public.leaderboard_cache for all using (user_id = auth.uid());
-create policy "leaderboard: admin" on public.leaderboard_cache using (public.current_user_role() = 'admin');
+create policy "leaderboard: admin" on public.leaderboard_cache for all using (public.current_user_role() = 'admin');
 
 -- comments
 create policy "comments: read all" on public.comments for select using (auth.uid() is not null);
@@ -210,7 +210,7 @@ create policy "comment_reports: mod update" on public.comment_reports for update
 
 -- comment_timeouts
 create policy "comment_timeouts: read own" on public.comment_timeouts for select using (user_id = auth.uid());
-create policy "comment_timeouts: mod all" on public.comment_timeouts using (public.current_user_role() in ('moderator', 'admin'));
+create policy "comment_timeouts: mod all" on public.comment_timeouts for all using (public.current_user_role() in ('moderator', 'admin'));
 
 -- moderator_messages
 create policy "mod_messages: insert" on public.moderator_messages for insert with check (from_user_id = auth.uid());
@@ -221,4 +221,4 @@ create policy "mod_messages: mod reply" on public.moderator_messages for update 
 -- bug_reports
 create policy "bug_reports: insert" on public.bug_reports for insert with check (auth.uid() is not null);
 create policy "bug_reports: read own" on public.bug_reports for select using (reported_by = auth.uid());
-create policy "bug_reports: admin all" on public.bug_reports using (public.current_user_role() = 'admin');
+create policy "bug_reports: admin all" on public.bug_reports for all using (public.current_user_role() = 'admin');
