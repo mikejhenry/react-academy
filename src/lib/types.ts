@@ -10,6 +10,7 @@ export interface UserProfile {
   role: Role
   created_at: string
   last_active_at: string | null
+  onboarding_completed: boolean
 }
 
 export interface Module {

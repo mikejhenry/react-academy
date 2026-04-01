@@ -10,7 +10,8 @@ create table public.users (
   theme         text not null default 'pro' check (theme in ('fun', 'pro', 'dev')),
   role          text not null default 'student' check (role in ('student', 'moderator', 'admin')),
   created_at    timestamptz not null default now(),
-  last_active_at timestamptz
+  last_active_at timestamptz,
+  onboarding_completed boolean not null default false
 );
 
 -- Auto-create user row on auth sign-up
@@ -114,7 +115,7 @@ create table public.comment_reports (
 create table public.comment_timeouts (
   id         uuid primary key default uuid_generate_v4(),
   user_id    uuid not null references public.users on delete cascade,
-  issued_by  uuid not null references public.users,
+  issued_by  uuid references public.users on delete set null,
   expires_at timestamptz not null,
   reason     text not null,
   created_at timestamptz not null default now()
@@ -127,7 +128,7 @@ create table public.moderator_messages (
   subject          text not null,
   message          text not null,
   moderator_reply  text,
-  replied_by       uuid references public.users,
+  replied_by       uuid references public.users on delete set null,
   created_at       timestamptz not null default now(),
   resolved         boolean not null default false
 );
@@ -222,3 +223,20 @@ create policy "mod_messages: mod reply" on public.moderator_messages for update 
 create policy "bug_reports: insert" on public.bug_reports for insert with check (auth.uid() is not null);
 create policy "bug_reports: read own" on public.bug_reports for select using (reported_by = auth.uid());
 create policy "bug_reports: admin all" on public.bug_reports for all using (public.current_user_role() = 'admin');
+
+-- ════════════════════════════════════════════════════════
+-- Indexes
+-- ════════════════════════════════════════════════════════
+
+create index on public.progress (user_id);
+create index on public.progress (lesson_id);
+create index on public.quiz_attempts (user_id);
+create index on public.project_submissions (user_id);
+create index on public.badges (user_id);
+create index on public.comments (lesson_id);
+create index on public.comments (user_id);
+create index on public.comment_reports (comment_id);
+create index on public.leaderboard_cache (total_xp desc);
+create index on public.leaderboard_cache (current_streak desc);
+create index on public.leaderboard_cache (quiz_accuracy desc);
+create index on public.leaderboard_cache (lessons_completed desc);
