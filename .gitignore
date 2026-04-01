@@ -1,0 +1,21 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Editor
+.vscode/
+.idea/
+
+# Superpowers
+.superpowers/
+
+# OS
+.DS_Store
+Thumbs.db
