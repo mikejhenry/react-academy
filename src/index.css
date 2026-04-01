@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fun & Gamified theme ─────────────────────────────── */
+[data-theme='fun'] {
+  --color-bg: #fff7ed;
+  --color-bg-secondary: #fef3c7;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+  --color-primary: #f97316;
+  --color-primary-hover: #ea580c;
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+  --color-border: #fed7aa;
+  --color-card: #ffffff;
+  --font-body: 'Nunito', 'Segoe UI', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 1rem;
+}
+
+/* ── Clean & Professional theme ──────────────────────── */
+[data-theme='pro'] {
+  --color-bg: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-primary: #0f172a;
+  --color-primary-hover: #1e293b;
+  --color-success: #16a34a;
+  --color-warning: #ca8a04;
+  --color-error: #dc2626;
+  --color-border: #e2e8f0;
+  --color-card: #ffffff;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 0.5rem;
+}
+
+/* ── Dark Developer theme ────────────────────────────── */
+[data-theme='dev'] {
+  --color-bg: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-primary: #3fb950;
+  --color-primary-hover: #2ea043;
+  --color-success: #3fb950;
+  --color-warning: #d29922;
+  --color-error: #f85149;
+  --color-border: #30363d;
+  --color-card: #161b22;
+  --font-body: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius: 0.375rem;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
