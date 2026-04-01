@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default fallback (pro theme values) — overridden by [data-theme] */
+:root {
+  --color-bg: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-primary: #0f172a;
+  --color-primary-hover: #1e293b;
+  --color-success: #16a34a;
+  --color-warning: #ca8a04;
+  --color-error: #dc2626;
+  --color-border: #e2e8f0;
+  --color-card: #ffffff;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 0.5rem;
+}
+
 /* ── Fun & Gamified theme ─────────────────────────────── */
 [data-theme='fun'] {
   --color-bg: #fff7ed;

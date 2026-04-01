@@ -19,8 +19,8 @@ export default {
         card: 'var(--color-card)',
       },
       fontFamily: {
-        body: 'var(--font-body)',
-        mono: 'var(--font-mono)',
+        body: ['var(--font-body)'],
+        mono: ['var(--font-mono)'],
       },
       borderRadius: {
         theme: 'var(--radius)',
