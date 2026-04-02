@@ -24,6 +24,7 @@ describe('ModuleMap', () => {
     )
     expect(screen.getByText('HTML Fundamentals')).toBeInTheDocument()
     expect(screen.getByText('Capstone Project')).toBeInTheDocument()
+    expect(screen.getAllByLabelText('Locked').length).toBe(18)
   })
 
   it('shows module 1 as a link (unlocked)', () => {

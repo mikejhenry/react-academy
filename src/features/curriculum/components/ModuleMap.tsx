@@ -27,7 +27,7 @@ export function ModuleMap() {
             isUnlocked={isUnlocked}
             completedLessonCount={completedInModule}
             isComplete={isComplete}
-            nextLessonId={nextLesson.id}
+            nextLessonId={nextLesson?.id ?? ''}
           />
         )
       })}
