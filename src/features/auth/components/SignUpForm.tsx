@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
 interface SignUpFormProps {
@@ -14,6 +14,13 @@ export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [verifyPrompt, setVerifyPrompt] = useState(false)
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +32,7 @@ export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
     setLoading(false)
     if (error) { setError(error); return }
     setVerifyPrompt(true)
-    setTimeout(onSuccess, 3000)
+    successTimerRef.current = setTimeout(onSuccess, 3000)
   }
 
   if (verifyPrompt) {

@@ -4,16 +4,26 @@ import { useAuth } from '../hooks/useAuth'
 export function OAuthButtons() {
   const { signInWithGoogle, signInWithGitHub } = useAuth()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleOAuth = async (provider: 'google' | 'github') => {
     setLoadingProvider(provider)
-    if (provider === 'google') await signInWithGoogle()
-    else await signInWithGitHub()
-    setLoadingProvider(null)
+    setError(null)
+    try {
+      const result = provider === 'google'
+        ? await signInWithGoogle()
+        : await signInWithGitHub()
+      if (result.error) setError(result.error)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoadingProvider(null)
+    }
   }
 
   return (
     <div className="flex flex-col gap-3 w-full">
+      {error && <p className="text-error text-sm text-center">{error}</p>}
       <button
         onClick={() => handleOAuth('google')}
         disabled={!!loadingProvider}
