@@ -8,7 +8,7 @@ export function ContentRenderer({ blocks }: ContentRendererProps) {
   return (
     <div className="flex flex-col gap-5">
       {blocks.map((block, i) => (
-        <Block key={i} block={block} />
+        <Block key={`${block.type}-${i}`} block={block} />
       ))}
     </div>
   )
@@ -38,7 +38,7 @@ function Block({ block }: { block: ContentBlock }) {
       return (
         <ul className="list-disc list-inside flex flex-col gap-1.5 pl-2">
           {block.items.map((item, i) => (
-            <li key={i} className="text-text-base leading-relaxed">{item}</li>
+            <li key={`${i}-${item}`} className="text-text-base leading-relaxed">{item}</li>
           ))}
         </ul>
       )
