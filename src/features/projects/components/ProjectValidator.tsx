@@ -17,7 +17,7 @@ export function ProjectValidator({ project, onComplete }: ProjectValidatorProps)
   }
 
   const handleSubmit = () => {
-    onComplete(summary!.bonusXPEarned)
+    if (summary) onComplete(summary.bonusXPEarned)
   }
 
   return (
