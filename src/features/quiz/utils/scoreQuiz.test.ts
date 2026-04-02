@@ -88,4 +88,15 @@ describe('scoreQuiz — fill-blank', () => {
     expect(scoreQuiz([regexQ], ['#ff0000']).score).toBe(100)
     expect(scoreQuiz([regexQ], ['red']).score).toBe(0)
   })
+
+  it('returns 0 for invalid regex pattern', () => {
+    const badRegexQ: QuizQuestion = {
+      question: 'Bad pattern',
+      options: [],
+      correct: 0,
+      type: 'fill-blank',
+      pattern: '[',
+    }
+    expect(scoreQuiz([badRegexQ], ['anything']).score).toBe(0)
+  })
 })
