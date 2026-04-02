@@ -12,7 +12,13 @@ export function QuizQuestion({ question, index, answer, onChange, showResult }: 
   const isFillBlank = question.type === 'fill-blank'
   const isCorrectAnswer = showResult
     ? isFillBlank
-      ? answer.trim().toLowerCase() === (question.options[question.correct] ?? '').toLowerCase()
+      ? (() => {
+          const trimmed = answer.trim()
+          if (question.pattern) {
+            try { return new RegExp(question.pattern).test(trimmed) } catch { return false }
+          }
+          return trimmed.toLowerCase() === (question.options[question.correct] ?? '').toLowerCase()
+        })()
       : parseInt(answer, 10) === question.correct
     : false
 

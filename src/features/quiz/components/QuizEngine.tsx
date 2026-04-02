@@ -69,16 +69,16 @@ export function QuizEngine({ questions, onComplete }: QuizEngineProps) {
       ) : (
         <div className="flex flex-col gap-4 border-t border-border pt-6">
           <div className={`text-center p-4 rounded-theme ${
-            result!.score >= PASSING_SCORE ? 'bg-bg-secondary border border-success' : 'bg-bg-secondary border border-error'
+            (result?.score ?? 0) >= PASSING_SCORE ? 'bg-bg-secondary border border-success' : 'bg-bg-secondary border border-error'
           }`}>
-            <p className="text-3xl font-black text-text-base">{result!.score}%</p>
+            <p className="text-3xl font-black text-text-base">{result?.score ?? 0}%</p>
             <p className="text-text-muted text-sm mt-1">
-              {result!.correctCount} / {result!.total} correct
+              {result?.correctCount ?? 0} / {result?.total ?? 0} correct
             </p>
-            {result!.isPerfect && (
+            {(result?.isPerfect ?? false) && (
               <p className="text-success text-sm font-semibold mt-1">+50 bonus XP for a perfect score!</p>
             )}
-            {result!.score < PASSING_SCORE && (
+            {(result?.score ?? 0) < PASSING_SCORE && (
               <p className="text-error text-sm mt-1">You need 60% to continue. Try again!</p>
             )}
           </div>
@@ -91,10 +91,10 @@ export function QuizEngine({ questions, onComplete }: QuizEngineProps) {
             >
               Try Again
             </button>
-            {result!.score >= PASSING_SCORE && (
+            {(result?.score ?? 0) >= PASSING_SCORE && (
               <button
                 type="button"
-                onClick={() => onComplete(result!.score, answers)}
+                onClick={() => onComplete(result?.score ?? 0, answers)}
                 className="px-5 py-2.5 rounded-theme bg-primary hover:bg-primary-hover text-white font-semibold transition-colors text-sm"
               >
                 Continue →
