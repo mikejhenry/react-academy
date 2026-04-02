@@ -2,7 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { OnboardingPage } from '@/features/auth/pages/OnboardingPage'
-import { ModuleMapStub } from '@/pages/ModuleMapStub'
+import { ModuleMapPage } from '@/features/curriculum/pages/ModuleMapPage'
+import { LessonPage } from '@/features/curriculum/pages/LessonPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -14,7 +15,15 @@ export default function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <ModuleMapStub />
+            <ModuleMapPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/module/:moduleId/lesson/:lessonId"
+        element={
+          <ProtectedRoute>
+            <LessonPage />
           </ProtectedRoute>
         }
       />
