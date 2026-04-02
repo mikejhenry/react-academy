@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTheme } from '@/theme/ThemeContext'
 import { themes } from '@/theme/tokens'
 import { useAuth } from '../hooks/useAuth'
@@ -16,11 +17,17 @@ const THEME_PREVIEWS: { key: Theme; emoji: string; tagline: string }[] = [
 export function ThemeSelector({ onComplete }: ThemeSelectorProps) {
   const { theme, setTheme } = useTheme()
   const { updateProfile } = useAuth()
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSelect = (t: Theme) => setTheme(t)
 
   const handleConfirm = async () => {
-    await updateProfile({ theme })
+    setError(null)
+    setLoading(true)
+    const { error } = await updateProfile({ theme })
+    setLoading(false)
+    if (error) { setError(error); return }
     onComplete()
   }
 
@@ -35,6 +42,7 @@ export function ThemeSelector({ onComplete }: ThemeSelectorProps) {
         {THEME_PREVIEWS.map(({ key, emoji, tagline }) => (
           <button
             key={key}
+            type="button"
             onClick={() => handleSelect(key)}
             className={`p-4 rounded-theme border-2 text-left transition-all ${
               theme === key
@@ -49,11 +57,15 @@ export function ThemeSelector({ onComplete }: ThemeSelectorProps) {
         ))}
       </div>
 
+      {error && <p className="text-error text-sm">{error}</p>}
+
       <button
+        type="button"
         onClick={handleConfirm}
-        className="px-8 py-3 rounded-theme bg-primary hover:bg-primary-hover text-white font-semibold transition-colors"
+        disabled={loading}
+        className="px-8 py-3 rounded-theme bg-primary hover:bg-primary-hover text-white font-semibold transition-colors disabled:opacity-50"
       >
-        Start Learning →
+        {loading ? 'Saving...' : 'Start Learning →'}
       </button>
     </div>
   )

@@ -27,16 +27,20 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
       "> ready. let's build something.",
     ]
     let i = 0
+    let completionTimer: ReturnType<typeof setTimeout> | null = null
     const interval = setInterval(() => {
       if (i < terminalLines.length) {
         setLines(prev => [...prev, terminalLines[i]])
         i++
       } else {
         clearInterval(interval)
-        setTimeout(onComplete, 800)
+        completionTimer = setTimeout(onComplete, 800)
       }
     }, 350)
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      if (completionTimer !== null) clearTimeout(completionTimer)
+    }
   }, [theme, name, onComplete])
 
   if (theme === 'dev') {
