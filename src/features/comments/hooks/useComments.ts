@@ -21,17 +21,19 @@ export function useComments(lessonId: string) {
   const { user } = useAuth()
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [timeoutExpiry, setTimeoutExpiry] = useState<string | null>(null)
 
   // Check for active comment timeout on mount
+  const userId = user?.id
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
     async function checkTimeout() {
       const { data } = await supabase
         .from('comment_timeouts')
         .select('expires_at')
-        .eq('user_id', user!.id)
+        .eq('user_id', userId!)
         .gt('expires_at', new Date().toISOString())
         .limit(1)
         .maybeSingle()
@@ -41,50 +43,64 @@ export function useComments(lessonId: string) {
       }
     }
     checkTimeout()
-  }, [user?.id])
+  }, [userId])
 
   const loadComments = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('comments')
       .select('id, user_id, lesson_id, content, is_hidden, created_at, users!user_id(display_name, avatar_url)')
       .eq('lesson_id', lessonId)
       .eq('is_hidden', false)
       .order('created_at', { ascending: false })
       .limit(50)
-    setComments((data ?? []) as unknown as Comment[])
+    if (fetchError) {
+      setError(fetchError.message)
+    } else {
+      setError(null)
+      setComments((data ?? []) as unknown as Comment[])
+    }
     setLoading(false)
   }, [lessonId])
 
+  // Auto-load comments on mount (and when lessonId changes)
+  useEffect(() => {
+    loadComments()
+  }, [loadComments])
+
   const addComment = async (content: string): Promise<boolean> => {
     if (!user) return false
-    const { error } = await supabase.from('comments').insert({
+    if (isTimedOut) return false
+    const { error: insertError } = await supabase.from('comments').insert({
       user_id: user.id,
       lesson_id: lessonId,
       content,
     })
-    if (!error) await loadComments()
-    return !error
+    if (!insertError) await loadComments()
+    return !insertError
   }
 
   const deleteComment = async (commentId: string): Promise<void> => {
-    await supabase.from('comments').delete().eq('id', commentId)
-    setComments(prev => prev.filter(c => c.id !== commentId))
+    const { error: deleteError } = await supabase.from('comments').delete().eq('id', commentId)
+    if (!deleteError) {
+      setComments(prev => prev.filter(c => c.id !== commentId))
+    }
   }
 
   const reportComment = async (commentId: string, reason: string): Promise<boolean> => {
     if (!user) return false
-    const { error } = await supabase.from('comment_reports').insert({
+    const { error: reportError } = await supabase.from('comment_reports').insert({
       comment_id: commentId,
       reported_by: user.id,
       reason,
     })
-    return !error
+    return !reportError
   }
 
   return {
     comments,
     loading,
+    error,
     loadComments,
     addComment,
     deleteComment,
