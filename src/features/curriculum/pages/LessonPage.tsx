@@ -7,6 +7,7 @@ import { ContentRenderer } from '../components/ContentRenderer'
 import { QuizEngine } from '@/features/quiz/components/QuizEngine'
 import { ProjectValidator } from '@/features/projects/components/ProjectValidator'
 import { CelebrationOverlay } from '@/features/gamification/components/CelebrationOverlay'
+import { CommentSection } from '@/features/comments/components/CommentSection'
 
 type Step = 'content' | 'quiz' | 'project' | 'complete'
 
@@ -175,6 +176,9 @@ export function LessonPage() {
             </Link>
           </div>
         )}
+
+        {/* Discussion — always visible when lesson is loaded */}
+        <CommentSection lessonId={lesson.id} />
       </main>
 
       {/* Celebration overlay */}
