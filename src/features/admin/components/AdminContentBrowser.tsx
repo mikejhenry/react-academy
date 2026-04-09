@@ -101,12 +101,12 @@ export function AdminContentBrowser() {
                 Quiz ({selectedLesson.quiz.length} questions)
               </p>
               {selectedLesson.quiz.map((q, i) => (
-                <div key={i} className="mb-4 last:mb-0">
+                <div key={`${selectedLesson.id}-q${i}`} className="mb-4 last:mb-0">
                   <p className="text-sm font-semibold text-text-base mb-2">Q{i + 1}: {q.question}</p>
                   <ul className="flex flex-col gap-1">
                     {q.options.map((opt, j) => (
                       <li
-                        key={j}
+                        key={`${selectedLesson.id}-q${i}-opt${j}`}
                         className={`text-xs px-3 py-1.5 rounded-theme border ${
                           j === q.correct
                             ? 'border-success bg-success/5 text-success font-semibold'
@@ -132,7 +132,7 @@ export function AdminContentBrowser() {
                 <ul className="flex flex-col gap-1.5">
                   {selectedLesson.project.validators.map(v => (
                     <li key={v.id} className="flex items-start gap-2 text-xs">
-                      <span className={v.required ? 'text-text-base' : 'text-success shrink-0'}>
+                      <span className={`shrink-0 ${v.required ? 'text-text-base' : 'text-success'}`}>
                         {v.required ? '●' : '◆'}
                       </span>
                       <span className="text-text-base">{v.description}</span>
