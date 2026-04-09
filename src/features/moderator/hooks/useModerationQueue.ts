@@ -36,15 +36,17 @@ interface RawReport {
 export function useModerationQueue(): {
   reports: ModerationReport[]
   loading: boolean
+  error: string | null
   resolveReport: (reportId: string, commentId: string, deleteComment: boolean) => Promise<void>
 } {
   const [reports, setReports] = useState<ModerationReport[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
       try {
-        const { data } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('comment_reports')
           .select(`
             id, reason, created_at,
@@ -56,6 +58,11 @@ export function useModerationQueue(): {
           `)
           .eq('resolved', false)
           .order('created_at', { ascending: false })
+
+        if (fetchError) {
+          setError(fetchError.message)
+          return
+        }
 
         const rows = (data ?? []) as unknown as RawReport[]
         setReports(
@@ -86,17 +93,20 @@ export function useModerationQueue(): {
 
   const resolveReport = useCallback(
     async (reportId: string, commentId: string, deleteComment: boolean) => {
-      const ops: Promise<unknown>[] = [
+      const ops: [Promise<{ error: unknown }>, ...Promise<{ error: unknown }>[]] = [
         supabase.from('comment_reports').update({ resolved: true }).eq('id', reportId),
       ]
       if (deleteComment) {
         ops.push(supabase.from('comments').update({ is_hidden: true }).eq('id', commentId))
       }
-      await Promise.all(ops)
-      setReports(prev => prev.filter(r => r.id !== reportId))
+      const results = await Promise.all(ops)
+      const anyError = results.some(r => (r as { error: unknown }).error)
+      if (!anyError) {
+        setReports(prev => prev.filter(r => r.id !== reportId))
+      }
     },
     []
   )
 
-  return { reports, loading, resolveReport }
+  return { reports, loading, error, resolveReport }
 }

@@ -4,9 +4,10 @@ import { ModerationQueueItem } from './ModerationQueueItem'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 export function ModerationQueue() {
-  const { reports, loading, resolveReport } = useModerationQueue()
+  const { reports, loading, error, resolveReport } = useModerationQueue()
 
   if (loading) return <LoadingSpinner />
+  if (error) return <p className="text-error text-sm">{error}</p>
   if (reports.length === 0) {
     return <p className="text-text-muted text-sm">No pending reports.</p>
   }

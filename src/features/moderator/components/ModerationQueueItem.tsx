@@ -20,8 +20,11 @@ export function ModerationQueueItem({ report, onResolve }: ModerationQueueItemPr
 
   const handleAction = async (deleteComment: boolean) => {
     setResolving(true)
-    await onResolve(report.id, report.comment.id, deleteComment)
-    setResolving(false)
+    try {
+      await onResolve(report.id, report.comment.id, deleteComment)
+    } finally {
+      setResolving(false)
+    }
   }
 
   return (
