@@ -16,6 +16,9 @@ export function ModuleMapPage() {
             <nav className="hidden sm:flex gap-3 text-sm">
               <Link to="/leaderboard" className="text-text-muted hover:text-primary transition-colors">Leaderboard</Link>
               <Link to="/profile" className="text-text-muted hover:text-primary transition-colors">{user?.display_name}</Link>
+              {(user?.role === 'moderator' || user?.role === 'admin') && (
+                <Link to="/moderator" className="text-text-muted hover:text-primary transition-colors">Moderation</Link>
+              )}
             </nav>
             <select
               value={theme}

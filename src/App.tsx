@@ -7,6 +7,7 @@ import { LessonPage } from '@/features/curriculum/pages/LessonPage'
 import { LeaderboardPage } from '@/features/leaderboard/pages/LeaderboardPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { BugReportPage } from '@/features/bugreport/pages/BugReportPage'
+import { ModeratorPage } from '@/features/moderator/pages/ModeratorPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -51,6 +52,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <BugReportPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/moderator"
+        element={
+          <ProtectedRoute requiredRole="moderator">
+            <ModeratorPage />
           </ProtectedRoute>
         }
       />
