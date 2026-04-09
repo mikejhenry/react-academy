@@ -44,6 +44,7 @@ export function useAdminUsers(search: string): {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
       setLoading(true)
       setError(null)
@@ -61,6 +62,7 @@ export function useAdminUsers(search: string): {
         }
 
         const { data, error: fetchError } = await query
+        if (cancelled) return
         if (fetchError) {
           setError(fetchError.message)
           return
@@ -76,10 +78,11 @@ export function useAdminUsers(search: string): {
           }))
         )
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     load()
+    return () => { cancelled = true }
   }, [search])
 
   const changeRole = useCallback(async (userId: string, role: Role) => {
@@ -87,13 +90,12 @@ export function useAdminUsers(search: string): {
       .from('users')
       .update({ role })
       .eq('id', userId)
-    if (!updateError) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
-    }
+    if (updateError) throw new Error(updateError.message)
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
   }, [])
 
   const resetProgress = useCallback(async (userId: string) => {
-    await Promise.all([
+    const results = await Promise.all([
       supabase.from('progress').delete().eq('user_id', userId),
       supabase.from('quiz_attempts').delete().eq('user_id', userId),
       supabase.from('project_submissions').delete().eq('user_id', userId),
@@ -101,6 +103,8 @@ export function useAdminUsers(search: string): {
       supabase.from('profiles').update({ earned_badge_ids: [] }).eq('id', userId),
       supabase.from('badge_events').delete().eq('user_id', userId),
     ])
+    const failed = results.find(r => r.error)
+    if (failed) throw new Error(failed.error!.message)
   }, [])
 
   return { users, loading, error, changeRole, resetProgress }
@@ -114,6 +118,7 @@ export function useAdminUserDetail(userId: string | null): AdminUserDetail {
 
   useEffect(() => {
     if (!userId) return
+    const uid = userId  // string, not string | null
     setLoading(true)
 
     async function load() {
@@ -122,17 +127,17 @@ export function useAdminUserDetail(userId: string | null): AdminUserDetail {
           supabase
             .from('leaderboard_cache')
             .select('xp, streak')
-            .eq('user_id', userId)
+            .eq('user_id', uid)
             .maybeSingle(),
           supabase
             .from('profiles')
             .select('earned_badge_ids')
-            .eq('id', userId)
+            .eq('id', uid)
             .maybeSingle(),
           supabase
             .from('progress')
             .select('lesson_id', { count: 'exact', head: true })
-            .eq('user_id', userId),
+            .eq('user_id', uid),
         ])
         const rawXP = (cacheRes.data?.xp as number | null) ?? 0
         const level = getLevel(rawXP)
