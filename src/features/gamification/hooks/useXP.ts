@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { evaluateBadges, getLevel } from '@/data/achievements'
+import { MODULES } from '@/data/curriculum'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import type { UserProgressState } from '@/lib/types'
 
@@ -20,6 +21,40 @@ export function computeNewStreak(
   if (diffDays === 1) return currentStreak + 1
   if (diffDays === 0) return currentStreak
   return 1
+}
+
+export function buildProgressState(
+  progressRows: { lesson_id: string; completed_at: string }[],
+  quizRows: { lesson_id: string; score: number }[],
+  xp: number,
+  streak: number,
+  today: string,
+): UserProgressState {
+  const completedLessons = progressRows.map(r => r.lesson_id)
+
+  // A module is complete when all its lessons appear in completedLessons
+  const completedModules = MODULES
+    .filter(m => m.lessons.every(l => completedLessons.includes(l.id)))
+    .map(m => m.id)
+
+  // Best score per lesson (for quiz badge conditions)
+  const quizScores: Record<string, number> = {}
+  for (const row of quizRows) {
+    quizScores[row.lesson_id] = Math.max(quizScores[row.lesson_id] ?? 0, row.score)
+  }
+
+  // Count lessons completed on today's UTC date
+  const lessonsToday = progressRows.filter(r => r.completed_at.slice(0, 10) === today).length
+
+  return {
+    completedLessons,
+    completedModules,
+    xp,
+    streak,
+    quizScores,
+    lessonsToday,
+    projectsPassed: [],
+  }
 }
 
 export function useXP(): { awardXP: (amount: number, reason: string) => Promise<void> } {
@@ -66,33 +101,37 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
         return
       }
 
-      // Read existing earned badge ids from profiles
-      const { data: profileRow, error: profileReadError } = await supabase
-        .from('profiles')
-        .select('earned_badge_ids')
-        .eq('id', user.id)
-        .maybeSingle()
+      // Fetch progress and quiz data in parallel for badge evaluation
+      const [progressRes, quizRes, profileRes] = await Promise.all([
+        supabase
+          .from('progress')
+          .select('lesson_id, completed_at')
+          .eq('user_id', user.id),
+        supabase
+          .from('quiz_attempts')
+          .select('lesson_id, score')
+          .eq('user_id', user.id),
+        supabase
+          .from('profiles')
+          .select('earned_badge_ids')
+          .eq('id', user.id)
+          .maybeSingle(),
+      ])
 
-      if (profileReadError) {
-        console.error('useXP: failed to read profiles', profileReadError)
+      if (profileRes.error) {
+        console.error('useXP: failed to read profiles', profileRes.error)
         return
       }
 
+      const progressRows = (progressRes.data ?? []) as { lesson_id: string; completed_at: string }[]
+      const quizRows = (quizRes.data ?? []) as { lesson_id: string; score: number }[]
+
       const existingBadgeIds: string[] =
-        Array.isArray(profileRow?.earned_badge_ids)
-          ? (profileRow.earned_badge_ids as string[])
+        Array.isArray(profileRes.data?.earned_badge_ids)
+          ? (profileRes.data.earned_badge_ids as string[])
           : []
 
-      // Build a minimal UserProgressState to evaluate badges
-      const progressState: UserProgressState = {
-        completedLessons: [],
-        completedModules: [],
-        xp: newXP,
-        streak: newStreak,
-        quizScores: {},
-        lessonsToday: 0,
-        projectsPassed: [],
-      }
+      const progressState = buildProgressState(progressRows, quizRows, newXP, newStreak, today)
 
       const earnedBadges = evaluateBadges(progressState)
       const earnedBadgeIds = earnedBadges.map((b) => b.id)
