@@ -76,6 +76,7 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
         return
       }
 
+      // TODO: remove casts once supabase types are generated (`supabase gen types typescript`)
       const currentXP: number = (cacheRow?.xp as number | null) ?? 0
       const currentStreak: number = (cacheRow?.streak as number | null) ?? 0
       const lastActivityDate: string | null = (cacheRow?.last_activity_date as string | null) ?? null
@@ -123,6 +124,14 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
         return
       }
 
+      // Log but continue with degraded data if progress/quiz fetches fail (XP is already awarded)
+      if (progressRes.error) {
+        console.error('useXP: failed to read progress, badge evaluation may be incomplete', progressRes.error)
+      }
+      if (quizRes.error) {
+        console.error('useXP: failed to read quiz_attempts, badge evaluation may be incomplete', quizRes.error)
+      }
+      // TODO: remove casts once supabase types are generated (`supabase gen types typescript`)
       const progressRows = (progressRes.data ?? []) as { lesson_id: string; completed_at: string }[]
       const quizRows = (quizRes.data ?? []) as { lesson_id: string; score: number }[]
 
