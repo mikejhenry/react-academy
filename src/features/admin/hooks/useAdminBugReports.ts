@@ -70,9 +70,8 @@ export function useAdminBugReports(): {
       .from('bug_reports')
       .update({ status })
       .eq('id', reportId)
-    if (!updateError) {
-      setReports(prev => prev.map(r => r.id === reportId ? { ...r, status } : r))
-    }
+    if (updateError) throw new Error(updateError.message)
+    setReports(prev => prev.map(r => r.id === reportId ? { ...r, status } : r))
   }, [])
 
   return { reports, loading, error, updateStatus }

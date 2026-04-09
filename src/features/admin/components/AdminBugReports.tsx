@@ -72,6 +72,7 @@ export function AdminBugReports() {
                     type="button"
                     onClick={() => setExpandedId(expandedId === report.id ? null : report.id)}
                     className="text-xs text-text-muted hover:text-primary transition-colors"
+                    aria-label={expandedId === report.id ? 'Collapse report details' : 'Expand report details'}
                   >
                     {expandedId === report.id ? 'Less ▲' : 'More ▼'}
                   </button>
@@ -94,7 +95,13 @@ export function AdminBugReports() {
                         <button
                           key={s}
                           type="button"
-                          onClick={() => updateStatus(report.id, s)}
+                          onClick={async () => {
+                            try {
+                              await updateStatus(report.id, s)
+                            } catch (err) {
+                              console.error('Failed to update status', err)
+                            }
+                          }}
                           className="px-3 py-1.5 text-xs rounded-theme border border-border text-text-muted hover:text-text-base transition-colors"
                         >
                           Mark {STATUS_LABELS[s]}
