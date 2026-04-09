@@ -4,6 +4,9 @@ import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { OnboardingPage } from '@/features/auth/pages/OnboardingPage'
 import { ModuleMapPage } from '@/features/curriculum/pages/ModuleMapPage'
 import { LessonPage } from '@/features/curriculum/pages/LessonPage'
+import { LeaderboardPage } from '@/features/leaderboard/pages/LeaderboardPage'
+import { ProfilePage } from '@/features/profile/pages/ProfilePage'
+import { BugReportPage } from '@/features/bugreport/pages/BugReportPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -24,6 +27,30 @@ export default function App() {
         element={
           <ProtectedRoute>
             <LessonPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute>
+            <LeaderboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/report-bug"
+        element={
+          <ProtectedRoute>
+            <BugReportPage />
           </ProtectedRoute>
         }
       />

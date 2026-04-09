@@ -13,7 +13,10 @@ export function ModuleMapPage() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-lg font-bold text-text-base">React Academy</h1>
           <div className="flex items-center gap-3">
-            <span className="text-text-muted text-sm hidden sm:block">{user?.display_name}</span>
+            <nav className="hidden sm:flex gap-3 text-sm">
+              <Link to="/leaderboard" className="text-text-muted hover:text-primary transition-colors">Leaderboard</Link>
+              <Link to="/profile" className="text-text-muted hover:text-primary transition-colors">{user?.display_name}</Link>
+            </nav>
             <select
               value={theme}
               onChange={e => setTheme(e.target.value as typeof theme)}
