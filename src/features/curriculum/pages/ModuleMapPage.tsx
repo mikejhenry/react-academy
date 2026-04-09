@@ -19,6 +19,9 @@ export function ModuleMapPage() {
               {(user?.role === 'moderator' || user?.role === 'admin') && (
                 <Link to="/moderator" className="text-text-muted hover:text-primary transition-colors">Moderation</Link>
               )}
+              {user?.role === 'admin' && (
+                <Link to="/admin" className="text-text-muted hover:text-primary transition-colors">Admin</Link>
+              )}
             </nav>
             <select
               value={theme}

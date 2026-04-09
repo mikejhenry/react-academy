@@ -8,6 +8,7 @@ import { LeaderboardPage } from '@/features/leaderboard/pages/LeaderboardPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { BugReportPage } from '@/features/bugreport/pages/BugReportPage'
 import { ModeratorPage } from '@/features/moderator/pages/ModeratorPage'
+import { AdminPage } from '@/features/admin/pages/AdminPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -60,6 +61,14 @@ export default function App() {
         element={
           <ProtectedRoute requiredRole="moderator">
             <ModeratorPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminPage />
           </ProtectedRoute>
         }
       />
