@@ -38,7 +38,9 @@ export function useAdminAnalytics(): AdminAnalyticsData {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
+      setError(null)
       try {
         const [
           userCountRes,
@@ -61,6 +63,8 @@ export function useAdminAnalytics(): AdminAnalyticsData {
         const fetchError =
           userCountRes.error ?? lessonCountRes.error ?? quizCountRes.error ??
           projectCountRes.error ?? xpRes.error ?? progressLessonsRes.error ?? bugStatusRes.error
+
+        if (cancelled) return
 
         if (fetchError) {
           setError(fetchError.message)
@@ -87,10 +91,11 @@ export function useAdminAnalytics(): AdminAnalyticsData {
           bugStatusCounts: groupByStatus(bugRows),
         })
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     load()
+    return () => { cancelled = true }
   }, [])
 
   return { ...data, loading, error }
