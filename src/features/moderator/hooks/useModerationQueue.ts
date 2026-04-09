@@ -93,14 +93,14 @@ export function useModerationQueue(): {
 
   const resolveReport = useCallback(
     async (reportId: string, commentId: string, deleteComment: boolean) => {
-      const ops: [Promise<{ error: unknown }>, ...Promise<{ error: unknown }>[]] = [
+      const ops = [
         supabase.from('comment_reports').update({ resolved: true }).eq('id', reportId),
       ]
       if (deleteComment) {
         ops.push(supabase.from('comments').update({ is_hidden: true }).eq('id', commentId))
       }
       const results = await Promise.all(ops)
-      const anyError = results.some(r => (r as { error: unknown }).error)
+      const anyError = results.some(r => r.error)
       if (!anyError) {
         setReports(prev => prev.filter(r => r.id !== reportId))
       }
