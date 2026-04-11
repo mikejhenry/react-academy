@@ -58,9 +58,15 @@ export function buildProgressState(
 }
 
 export function useXP(): { awardXP: (amount: number, reason: string) => Promise<void> } {
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
 
   async function awardXP(amount: number, _reason: string): Promise<void> {
+    if (isGuest) {
+      const current = parseInt(localStorage.getItem('guest_xp') ?? '0', 10)
+      localStorage.setItem('guest_xp', String(current + amount))
+      return
+    }
+
     if (!user) return
 
     try {
@@ -147,7 +153,6 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
       const newBadgeIds = earnedBadgeIds.filter((id) => !existingBadgeIds.includes(id))
 
       if (newBadgeIds.length > 0) {
-        // Insert badge events for newly earned badges
         const badgeEvents = newBadgeIds.map((badgeId) => ({
           user_id: user.id,
           badge_id: badgeId,
@@ -161,7 +166,6 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
           console.error('useXP: failed to insert badge_events', badgeEventError)
         }
 
-        // Update profiles with merged badge ids
         const { error: profileUpdateError } = await supabase
           .from('profiles')
           .update({ earned_badge_ids: [...existingBadgeIds, ...newBadgeIds] })
