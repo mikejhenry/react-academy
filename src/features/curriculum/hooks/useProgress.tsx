@@ -142,6 +142,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const saveQuizAttempt = useCallback(
     async (lessonId: string, score: number, answers: string[]): Promise<void> => {
       if (isGuest) {
+        // Guest mode: only the best score is persisted; per-attempt answers are not stored
         const data = readGuestProgress()
         data.quizScores[lessonId] = Math.max(data.quizScores[lessonId] ?? 0, score)
         writeGuestProgress(data)
