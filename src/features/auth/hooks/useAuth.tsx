@@ -51,6 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       if (session?.user) {
+        // Clear guest mode whenever a real session is established (covers OAuth redirects)
+        localStorage.removeItem('guest_mode')
+        localStorage.removeItem('guest_progress')
+        localStorage.removeItem('guest_xp')
+        setIsGuest(false)
         const profile = await fetchProfile(session.user.id)
         setUser(profile)
       } else {
