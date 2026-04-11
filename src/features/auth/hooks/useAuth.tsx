@@ -3,11 +3,15 @@ import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { UserProfile } from '@/lib/types'
+import { migrateGuestProgress } from '../utils/migrateGuestProgress'
 
 interface AuthContextValue {
   user: UserProfile | null
   session: Session | null
   loading: boolean
+  isGuest: boolean
+  continueAsGuest: () => void
+  clearGuest: () => void
   signUp: (email: string, password: string) => Promise<{ error: string | null }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signInWithGoogle: () => Promise<{ error: string | null }>
@@ -22,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isGuest, setIsGuest] = useState<boolean>(() => localStorage.getItem('guest_mode') === 'true')
 
   async function fetchProfile(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
@@ -57,8 +62,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const continueAsGuest = () => {
+    localStorage.setItem('guest_mode', 'true')
+    setIsGuest(true)
+  }
+
+  const clearGuest = () => {
+    localStorage.removeItem('guest_mode')
+    localStorage.removeItem('guest_progress')
+    localStorage.removeItem('guest_xp')
+    setIsGuest(false)
+  }
+
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (!error && data.user) {
+      await migrateGuestProgress(data.user.id)
+      clearGuest()
+    }
     return { error: error?.message ?? null }
   }
 
@@ -79,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    clearGuest()
     setUser(null)
     setSession(null)
   }
@@ -94,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signInWithGitHub, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ user, session, loading, isGuest, continueAsGuest, clearGuest, signUp, signIn, signInWithGoogle, signInWithGitHub, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   )
