@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { MODULES } from '@/data/curriculum'
+import type { GuestProgress } from '@/lib/types'
 
 // ── Pure utility (exported for tests) ────────────────────────────────────────
 
@@ -12,6 +13,22 @@ export function isModuleUnlocked(moduleId: string, completedLessons: string[]): 
   if (idx <= 0) return false
   const prev = MODULES[idx - 1]
   return prev.lessons.every(l => completedLessons.includes(l.id))
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function readGuestProgress(): GuestProgress {
+  try {
+    const raw = localStorage.getItem('guest_progress')
+    if (raw) return JSON.parse(raw) as GuestProgress
+  } catch {
+    // malformed — start fresh
+  }
+  return { lessons: [], quizScores: {}, projectsPassed: [] }
+}
+
+function writeGuestProgress(data: GuestProgress): void {
+  localStorage.setItem('guest_progress', JSON.stringify(data))
 }
 
 // ── Context types ─────────────────────────────────────────────────────────────
@@ -33,7 +50,7 @@ const ProgressContext = createContext<ProgressContextValue | null>(null)
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
   const [completedLessons, setCompletedLessons] = useState<string[]>([])
   const [quizScores, setQuizScores] = useState<Record<string, number>>({})
   const [projectsPassed, setProjectsPassed] = useState<string[]>([])
@@ -41,9 +58,16 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      setCompletedLessons([])
-      setQuizScores({})
-      setProjectsPassed([])
+      if (isGuest) {
+        const { lessons, quizScores: scores, projectsPassed: projects } = readGuestProgress()
+        setCompletedLessons(lessons.map(l => l.lesson_id))
+        setQuizScores(scores)
+        setProjectsPassed(projects)
+      } else {
+        setCompletedLessons([])
+        setQuizScores({})
+        setProjectsPassed([])
+      }
       setLoading(false)
       return
     }
@@ -71,7 +95,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       const lessons = (progressRes.data ?? []).map((r: { lesson_id: string }) => r.lesson_id)
       setCompletedLessons(lessons)
 
-      // Best score per lesson
       const scores: Record<string, number> = {}
       for (const row of (quizRes.data ?? []) as { lesson_id: string; score: number }[]) {
         if (scores[row.lesson_id] === undefined || row.score > scores[row.lesson_id]) {
@@ -87,15 +110,22 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     }
 
     load()
-  }, [user?.id])
+  }, [user?.id, isGuest])
 
-  // completedModules is derived — no separate DB table needed
   const completedModules = MODULES
     .filter(m => m.lessons.every(l => completedLessons.includes(l.id)))
     .map(m => m.id)
 
   const completeLesson = useCallback(
     async (lessonId: string, moduleId: string, xpEarned: number): Promise<{ wasNew: boolean }> => {
+      if (isGuest) {
+        if (completedLessons.includes(lessonId)) return { wasNew: false }
+        const data = readGuestProgress()
+        data.lessons.push({ lesson_id: lessonId, module_id: moduleId, completed_at: new Date().toISOString(), xp_earned: xpEarned })
+        writeGuestProgress(data)
+        setCompletedLessons(prev => [...prev, lessonId])
+        return { wasNew: true }
+      }
       if (!user || completedLessons.includes(lessonId)) return { wasNew: false }
       const { error } = await supabase.from('progress').insert({
         user_id: user.id,
@@ -106,11 +136,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       if (!error) setCompletedLessons(prev => [...prev, lessonId])
       return { wasNew: !error }
     },
-    [user, completedLessons]
+    [user, isGuest, completedLessons]
   )
 
   const saveQuizAttempt = useCallback(
     async (lessonId: string, score: number, answers: string[]): Promise<void> => {
+      if (isGuest) {
+        const data = readGuestProgress()
+        data.quizScores[lessonId] = Math.max(data.quizScores[lessonId] ?? 0, score)
+        writeGuestProgress(data)
+        setQuizScores(prev => ({ ...prev, [lessonId]: Math.max(prev[lessonId] ?? 0, score) }))
+        return
+      }
       if (!user) return
       await supabase.from('quiz_attempts').insert({
         user_id: user.id,
@@ -124,11 +161,19 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         [lessonId]: Math.max(prev[lessonId] ?? 0, score),
       }))
     },
-    [user]
+    [user, isGuest]
   )
 
   const completeProject = useCallback(
     async (projectId: string): Promise<{ wasNew: boolean }> => {
+      if (isGuest) {
+        if (projectsPassed.includes(projectId)) return { wasNew: false }
+        const data = readGuestProgress()
+        data.projectsPassed.push(projectId)
+        writeGuestProgress(data)
+        setProjectsPassed(prev => [...prev, projectId])
+        return { wasNew: true }
+      }
       if (!user || projectsPassed.includes(projectId)) return { wasNew: false }
       const { error } = await supabase.from('project_submissions').insert({
         user_id: user.id,
@@ -139,7 +184,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       if (!error) setProjectsPassed(prev => [...prev, projectId])
       return { wasNew: !error }
     },
-    [user, projectsPassed]
+    [user, isGuest, projectsPassed]
   )
 
   const isModuleUnlockedForUser = useCallback(
