@@ -8,6 +8,7 @@ import { QuizEngine } from '@/features/quiz/components/QuizEngine'
 import { ProjectValidator } from '@/features/projects/components/ProjectValidator'
 import { CelebrationOverlay } from '@/features/gamification/components/CelebrationOverlay'
 import { CommentSection } from '@/features/comments/components/CommentSection'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 type Step = 'content' | 'quiz' | 'project' | 'complete'
 
@@ -15,6 +16,7 @@ export function LessonPage() {
   const { moduleId, lessonId } = useParams<{ moduleId: string; lessonId: string }>()
   const navigate = useNavigate()
   const { completedLessons, completeLesson, saveQuizAttempt, completeProject } = useProgress()
+  const { isGuest } = useAuth()
   const { awardXP } = useXP()
 
   const module = MODULES.find(m => m.id === moduleId)
@@ -166,19 +168,43 @@ export function LessonPage() {
 
         {/* Step: complete (no celebration shown — handled by overlay) */}
         {step === 'complete' && !showCelebration && (
-          <div className="text-center py-12">
-            <p className="text-text-base text-lg mb-4">Lesson complete!</p>
-            <Link
-              to="/"
-              className="inline-block px-6 py-3 rounded-theme bg-primary hover:bg-primary-hover text-white font-semibold transition-colors"
-            >
-              Back to modules
-            </Link>
+          <div className="py-12 flex flex-col gap-6">
+            <p className="text-text-base text-lg text-center">Lesson complete!</p>
+            {isGuest && (
+              <div className="bg-primary/10 border border-primary/20 rounded-theme p-4 flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="font-semibold text-text-base text-sm">💾 Don't lose your progress</p>
+                  <p className="text-text-muted text-xs mt-0.5">Create a free account to save permanently across all devices.</p>
+                </div>
+                <Link
+                  to="/auth"
+                  className="shrink-0 px-4 py-2 rounded-theme bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors"
+                >
+                  Sign Up Free
+                </Link>
+              </div>
+            )}
+            <div className="text-center">
+              <Link
+                to="/"
+                className="inline-block px-6 py-3 rounded-theme bg-primary hover:bg-primary-hover text-white font-semibold transition-colors"
+              >
+                {isGuest ? 'Continue Learning →' : 'Back to modules'}
+              </Link>
+            </div>
           </div>
         )}
 
-        {/* Discussion — always visible when lesson is loaded */}
-        <CommentSection lessonId={lesson.id} />
+        {/* Discussion */}
+        {isGuest ? (
+          <div className="mt-8 pt-8 border-t border-border">
+            <p className="text-text-muted text-sm">
+              <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to join the discussion.
+            </p>
+          </div>
+        ) : (
+          <CommentSection lessonId={lesson.id} />
+        )}
       </main>
 
       {/* Celebration overlay */}
