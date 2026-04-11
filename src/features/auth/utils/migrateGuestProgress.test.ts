@@ -107,4 +107,13 @@ describe('migrateGuestProgress', () => {
 
     expect(mockProgressUpsert).not.toHaveBeenCalled()
   })
+
+  it('returns without crashing when guest_progress is malformed JSON', async () => {
+    localStorage.setItem('guest_progress', 'not-valid-json')
+
+    await migrateGuestProgress('user-123')
+
+    expect(mockProgressUpsert).not.toHaveBeenCalled()
+    expect(localStorage.getItem('guest_progress')).toBeNull()
+  })
 })

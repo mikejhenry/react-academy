@@ -9,9 +9,11 @@ export async function migrateGuestProgress(userId: string): Promise<void> {
     if (!rawProgress && !rawXP) return
 
     if (rawProgress) {
-      const { lessons } = JSON.parse(rawProgress) as GuestProgress
+      const parsed = JSON.parse(rawProgress) as GuestProgress
+      if (!Array.isArray(parsed?.lessons)) return
+      const { lessons } = parsed
       if (lessons.length > 0) {
-        await supabase.from('progress').upsert(
+        const { error: progressError } = await supabase.from('progress').upsert(
           lessons.map(l => ({
             user_id: userId,
             lesson_id: l.lesson_id,
@@ -21,6 +23,7 @@ export async function migrateGuestProgress(userId: string): Promise<void> {
           })),
           { onConflict: 'user_id,lesson_id', ignoreDuplicates: true }
         )
+        if (progressError) throw new Error(progressError.message)
       }
     }
 
@@ -32,7 +35,8 @@ export async function migrateGuestProgress(userId: string): Promise<void> {
         .eq('user_id', userId)
         .maybeSingle()
       const currentXP = (existing?.xp as number | null) ?? 0
-      await supabase.from('leaderboard_cache').upsert({ user_id: userId, xp: currentXP + guestXP })
+      const { error: cacheError } = await supabase.from('leaderboard_cache').upsert({ user_id: userId, xp: currentXP + guestXP })
+      if (cacheError) throw new Error(cacheError.message)
     }
   } catch (err) {
     console.error('migrateGuestProgress: migration failed', err)
