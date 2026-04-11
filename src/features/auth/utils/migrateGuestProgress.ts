@@ -27,7 +27,8 @@ export async function migrateGuestProgress(userId: string): Promise<void> {
       }
     }
 
-    const guestXP = rawXP ? parseInt(rawXP, 10) : 0
+    const parsed = rawXP ? parseInt(rawXP, 10) : 0
+    const guestXP = Number.isNaN(parsed) ? 0 : parsed
     if (guestXP > 0) {
       const { data: existing } = await supabase
         .from('leaderboard_cache')

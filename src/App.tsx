@@ -35,7 +35,7 @@ export default function App() {
       <Route
         path="/leaderboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="student">
             <LeaderboardPage />
           </ProtectedRoute>
         }
@@ -43,7 +43,7 @@ export default function App() {
       <Route
         path="/profile"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="student">
             <ProfilePage />
           </ProtectedRoute>
         }

@@ -62,7 +62,8 @@ export function useXP(): { awardXP: (amount: number, reason: string) => Promise<
 
   async function awardXP(amount: number, _reason: string): Promise<void> {
     if (isGuest) {
-      const current = parseInt(localStorage.getItem('guest_xp') ?? '0', 10)
+      const raw = parseInt(localStorage.getItem('guest_xp') ?? '0', 10)
+      const current = Number.isNaN(raw) ? 0 : raw
       localStorage.setItem('guest_xp', String(current + amount))
       return
     }
