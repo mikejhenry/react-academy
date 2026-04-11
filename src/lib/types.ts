@@ -81,3 +81,9 @@ export interface UserProgressState {
   lessonsToday: number
   projectsPassed: string[]
 }
+
+export interface GuestProgress {
+  lessons: { lesson_id: string; module_id: string; completed_at: string; xp_earned: number }[]
+  quizScores: Record<string, number>
+  projectsPassed: string[]
+}
