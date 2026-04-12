@@ -9,8 +9,6 @@ interface LessonRowProps {
 }
 
 export function LessonRow({ lesson, moduleId, status }: LessonRowProps) {
-  const href = `/module/${moduleId}/lesson/${lesson.id}`
-
   const icon =
     status === 'completed' ? (
       <span className="text-success text-xs flex-shrink-0">✓</span>
@@ -35,7 +33,10 @@ export function LessonRow({ lesson, moduleId, status }: LessonRowProps) {
 
   if (status === 'locked') {
     return (
-      <div className="flex items-center gap-2 border border-white/[0.06] rounded-md px-2.5 py-2 opacity-40 cursor-not-allowed">
+      <div
+        className="flex items-center gap-2 border border-white/[0.06] rounded-md px-2.5 py-2 opacity-40 cursor-not-allowed"
+        aria-disabled="true"
+      >
         {icon}
         <span className={titleClass}>{lesson.title}</span>
         {meta}
@@ -43,6 +44,7 @@ export function LessonRow({ lesson, moduleId, status }: LessonRowProps) {
     )
   }
 
+  const href = `/module/${moduleId}/lesson/${lesson.id}`
   const rowClass =
     status === 'completed'
       ? 'flex items-center gap-2 bg-success/[0.08] border border-success/25 hover:border-success/50 rounded-md px-2.5 py-2'

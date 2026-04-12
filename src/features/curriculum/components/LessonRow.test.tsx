@@ -94,4 +94,15 @@ describe('LessonRow', () => {
     )
     expect(screen.getByText('What is HTML?')).toBeInTheDocument()
   })
+
+  it('locked row has aria-disabled attribute', () => {
+    render(
+      <MemoryRouter>
+        <LessonRow lesson={lesson} moduleId="1" status="locked" />
+      </MemoryRouter>
+    )
+    // The locked row is a div — get it by its content
+    const lockedRow = screen.getByText('What is HTML?').closest('div')
+    expect(lockedRow).toHaveAttribute('aria-disabled', 'true')
+  })
 })
