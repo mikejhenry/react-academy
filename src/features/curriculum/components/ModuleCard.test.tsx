@@ -34,7 +34,8 @@ describe('ModuleCard', () => {
 
   it('collapsed state shows lesson count', () => {
     render(<MemoryRouter><ModuleCard {...baseProps} /></MemoryRouter>)
-    expect(screen.getAllByText('1/3 lessons').length).toBeGreaterThanOrEqual(1)
+    // Both button subtitle and progress bar show the same lesson count
+    expect(screen.getAllByText('1/3 lessons')).toHaveLength(2)
   })
 
   it('expanded state shows lesson list', () => {
