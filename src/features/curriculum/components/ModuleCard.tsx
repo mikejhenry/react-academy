@@ -55,7 +55,7 @@ export function ModuleCard({
         <span className="text-3xl">{module.icon}</span>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-text-base text-sm leading-snug">{module.title}</h3>
-          <p className="text-text-muted text-xs">{completedLessonCount}/{totalLessons} completed</p>
+          <p className="text-text-muted text-xs">{completedLessonCount}/{totalLessons} lessons</p>
         </div>
         <span className="text-text-muted text-xs" aria-hidden="true">
           {isExpanded ? '▴' : '▾'}

@@ -34,7 +34,7 @@ describe('ModuleCard', () => {
 
   it('collapsed state shows lesson count', () => {
     render(<MemoryRouter><ModuleCard {...baseProps} /></MemoryRouter>)
-    expect(screen.getByText('1/3 lessons')).toBeInTheDocument()
+    expect(screen.getAllByText('1/3 lessons').length).toBeGreaterThanOrEqual(1)
   })
 
   it('expanded state shows lesson list', () => {
