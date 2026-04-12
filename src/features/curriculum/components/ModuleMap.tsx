@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { MODULES } from '@/data/curriculum'
 import { ModuleCard } from './ModuleCard'
 import { useProgress } from '../hooks/useProgress'
@@ -5,6 +6,15 @@ import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 
 export function ModuleMap() {
   const { completedLessons, completedModules, isModuleUnlockedForUser, loading } = useProgress()
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  function handleToggle(moduleId: string) {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      next.has(moduleId) ? next.delete(moduleId) : next.add(moduleId)
+      return next
+    })
+  }
 
   if (loading) return <LoadingSpinner />
 
@@ -16,9 +26,6 @@ export function ModuleMap() {
         ).length
         const isComplete = completedModules.includes(module.id)
         const isUnlocked = isModuleUnlockedForUser(module.id)
-        const nextLesson =
-          module.lessons.find(l => !completedLessons.includes(l.id)) ??
-          module.lessons[0]
 
         return (
           <ModuleCard
@@ -27,7 +34,9 @@ export function ModuleMap() {
             isUnlocked={isUnlocked}
             completedLessonCount={completedInModule}
             isComplete={isComplete}
-            nextLessonId={nextLesson?.id ?? ''}
+            isExpanded={expandedIds.has(module.id)}
+            onToggle={handleToggle}
+            completedLessons={completedLessons}
           />
         )
       })}

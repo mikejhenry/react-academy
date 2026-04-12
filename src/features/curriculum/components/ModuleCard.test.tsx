@@ -21,7 +21,6 @@ const baseProps = {
   isUnlocked: true,
   completedLessonCount: 1,
   isComplete: false,
-  nextLessonId: '1.2',
   isExpanded: false,
   onToggle: vi.fn(),
   completedLessons: ['1.1'],

@@ -7,7 +7,6 @@ interface ModuleCardProps {
   isUnlocked: boolean
   completedLessonCount: number
   isComplete: boolean
-  nextLessonId: string
   isExpanded: boolean
   onToggle: (moduleId: string) => void
   completedLessons: string[]
@@ -18,7 +17,6 @@ export function ModuleCard({
   isUnlocked,
   completedLessonCount,
   isComplete,
-  nextLessonId: _nextLessonId,
   isExpanded,
   onToggle,
   completedLessons,
