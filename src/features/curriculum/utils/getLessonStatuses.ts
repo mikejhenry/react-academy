@@ -14,7 +14,7 @@ export function getLessonStatuses(
   const completed = completedLessons ?? []
   let foundCurrent = false
   return lessons.map(lesson => {
-    if (completed.includes(lesson.id)) {
+    if (!foundCurrent && completed.includes(lesson.id)) {
       return { lesson, status: 'completed' }
     }
     if (!foundCurrent) {

@@ -55,4 +55,15 @@ describe('getLessonStatuses', () => {
     expect(result[0].lesson).toBe(lessons[0])
     expect(result[1].lesson).toBe(lessons[1])
   })
+
+  it('treats lessons after the current boundary as locked even if in completedLessons', () => {
+    const lessons = makeLessons(['1.1', '1.2', '1.3', '1.4'])
+    const result = getLessonStatuses(lessons, ['1.1', '1.3']) // 1.2 skipped
+    expect(result.map(r => r.status)).toEqual(['completed', 'current', 'locked', 'locked'])
+  })
+
+  it('returns empty array when given empty lessons', () => {
+    const result = getLessonStatuses([], ['1.1'])
+    expect(result).toEqual([])
+  })
 })
